@@ -63,7 +63,7 @@
 	<script>
 		(function () {
 			const configureContactForms = () => {
-				const endpoint = "https://formsubmit.co/asuhail1712@gmail.com";
+				const endpoint = "https://formsubmit.co/ajax/asuhail1712@gmail.com";
 				const nextUrl = window.location.origin + window.location.pathname + "?message=sent#contact";
 				document.querySelectorAll("form.framer-dkc5tc").forEach((form) => {
 					const visibleFields = Array.from(form.querySelectorAll('input:not([aria-hidden="true"]), textarea'));
@@ -71,6 +71,7 @@
 					form.method = "POST";
 					form.action = endpoint;
 					form.acceptCharset = "UTF-8";
+					form.noValidate = true;
 
 					const [emailField, phoneField, messageField] = visibleFields;
 					emailField.name = "email";
@@ -102,6 +103,69 @@
 							form.appendChild(field);
 						}
 						field.value = value;
+					});
+
+					const footerNote = form.querySelector(".framer-1mww144");
+					const submitButton = form.querySelector('button[type="submit"]');
+					if (submitButton && !submitButton.dataset.codexSubmitBound) {
+						submitButton.dataset.codexSubmitBound = "true";
+						submitButton.addEventListener("click", () => {
+							if (typeof form.requestSubmit === "function") {
+								form.requestSubmit();
+							} else {
+								form.dispatchEvent(new Event("submit", { cancelable: true, bubbles: true }));
+							}
+						});
+					}
+
+					if (form.dataset.codexSubmitBound) return;
+					form.dataset.codexSubmitBound = "true";
+					form.addEventListener("submit", async (event) => {
+						event.preventDefault();
+
+						if (!emailField.value.trim() || !messageField.value.trim()) {
+							if (footerNote) {
+								footerNote.textContent = "Please enter your email and message.";
+							}
+							return;
+						}
+
+						if (submitButton) {
+							submitButton.disabled = true;
+							submitButton.style.opacity = "0.7";
+						}
+						if (footerNote) {
+							footerNote.textContent = "Sending...";
+						}
+
+						try {
+							const response = await fetch(endpoint, {
+								method: "POST",
+								headers: {
+									"Accept": "application/json"
+								},
+								body: new FormData(form)
+							});
+							if (!response.ok) {
+								throw new Error("Request failed");
+							}
+							form.reset();
+							form.querySelectorAll(".framer-form-input").forEach((input) => {
+								input.classList.add("framer-form-input-empty");
+							});
+							if (footerNote) {
+								footerNote.textContent = "Message sent successfully.";
+							}
+						} catch (error) {
+							if (footerNote) {
+								footerNote.textContent = "Message failed. Please try again.";
+							}
+						} finally {
+							if (submitButton) {
+								submitButton.disabled = false;
+								submitButton.style.opacity = "1";
+							}
+						}
 					});
 				});
 			};
