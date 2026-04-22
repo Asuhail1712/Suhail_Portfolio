@@ -60,6 +60,59 @@
 			}
 		})();
 	</script>
+	<script>
+		(function () {
+			const configureContactForms = () => {
+				const endpoint = "https://formsubmit.co/asuhail1712@gmail.com";
+				const nextUrl = window.location.origin + window.location.pathname + "?message=sent#contact";
+				document.querySelectorAll("form.framer-dkc5tc").forEach((form) => {
+					const visibleFields = Array.from(form.querySelectorAll('input:not([aria-hidden="true"]), textarea'));
+					if (visibleFields.length < 3) return;
+					form.method = "POST";
+					form.action = endpoint;
+					form.acceptCharset = "UTF-8";
+
+					const [emailField, phoneField, messageField] = visibleFields;
+					emailField.name = "email";
+					emailField.type = "email";
+					emailField.required = true;
+					emailField.autocomplete = "email";
+
+					phoneField.name = "phone";
+					phoneField.type = "tel";
+					phoneField.autocomplete = "tel";
+
+					messageField.name = "message";
+					messageField.type = "text";
+					messageField.required = true;
+
+					const hiddenFields = {
+						_subject: "New portfolio contact form message",
+						_next: nextUrl,
+						_captcha: "false",
+						_template: "table"
+					};
+
+					Object.entries(hiddenFields).forEach(([name, value]) => {
+						let field = form.querySelector(`input[name="${name}"]`);
+						if (!field) {
+							field = document.createElement("input");
+							field.type = "hidden";
+							field.name = name;
+							form.appendChild(field);
+						}
+						field.value = value;
+					});
+				});
+			};
+
+			if (document.readyState === "loading") {
+				document.addEventListener("DOMContentLoaded", configureContactForms, { once: true });
+			} else {
+				configureContactForms();
+			}
+		})();
+	</script>
 	
 	<!-- Start of headStart -->
     
